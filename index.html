@@ -17,7 +17,7 @@
       height: 100vh;
       flex-direction: column;
     }
-    #startScreen {
+    #startScreen, #endScreen {
       position: absolute;
       background-color: rgba(255, 255, 255, 0.9);
       padding: 20px;
@@ -25,11 +25,11 @@
       text-align: center;
       z-index: 1000;
     }
-    #startScreen h2 {
+    #startScreen h2, #endScreen h2 {
       font-size: 18px;
       color: #d63384;
     }
-    #startScreen button {
+    #startScreen button, #endScreen button {
       padding: 10px 20px;
       background: #ff69b4;
       border: none;
@@ -37,6 +37,7 @@
       color: white;
       font-weight: bold;
       font-size: 16px;
+      cursor: pointer;
     }
     #gameCanvas {
       position: relative;
@@ -81,32 +82,36 @@
 </head>
 <body>
   <div id="startScreen">
-    <h2>Hey baby girl I was thinking about how much I missed you and I wanted to make a game for you. A bubbles game. You need to match same symbols w each other to get points. Every balloon you couldn't pop gonna be -1 point for you. If you reach the right point u will earn an award ;)</h2>
+    <h2>Hey baby girl 💕 I was thinking about how much I missed you and I wanted to make a game for you. Match the same bubbles to get points. Every unpopped one is -1. If you reach the goal, you’ll win a surprise! 💝</h2>
     <button onclick="startGame()">Play</button>
+  </div>
+
+  <div id="endScreen" style="display:none;">
+    <h2>🎉 You did it baby! 🎉<br>I love you so so much 💘</h2>
+    <button onclick="restartGame()">Play Again</button>
   </div>
 
   <div id="scoreBoard">Score: 0</div>
   <div id="gameCanvas"></div>
 
   <audio id="popSound" src="https://www.fesliyanstudios.com/play-mp3/387" preload="auto"></audio>
-  <audio id="bgMusic" src="https://files.catbox.moe/eajwex.mp3"></audio>
+  <audio id="bgMusic" src="https://files.catbox.moe/eajwex.mp3" loop preload="auto"></audio>
 
   <script>
     const symbols = ['🎀','💗','🌸','🩷','💖','✨'];
     let selected = [];
     let score = 0;
     let interval;
-
-    // Milestone kontrol değişkenleri
-    let milestone7 = false;
-    let milestone77 = false;
-    let milestone777 = false;
+    let gameActive = false;
 
     const canvas = document.getElementById("gameCanvas");
     const scoreBoard = document.getElementById("scoreBoard");
     const popSound = document.getElementById("popSound");
+    const bgMusic = document.getElementById("bgMusic");
 
     function createBubble() {
+      if (!gameActive) return;
+
       const bubble = document.createElement("div");
       bubble.className = "bubble";
       bubble.innerText = symbols[Math.floor(Math.random() * symbols.length)];
@@ -114,7 +119,7 @@
       bubble.style.top = "100vh";
       canvas.appendChild(bubble);
       let top = window.innerHeight;
-      const speed = 1.5 + Math.random();  // Sabit hız, skorla artmaz
+      const speed = 1.5 + Math.random();
 
       const move = setInterval(() => {
         top -= speed;
@@ -125,7 +130,6 @@
             canvas.removeChild(bubble);
             score--;
             updateScore();
-            checkMilestones();
           }
         }
       }, 20);
@@ -135,6 +139,7 @@
 
     function selectBubble(bubble) {
       if (selected.includes(bubble)) return;
+      if (selected.length >= 2) return;
       bubble.classList.add("selected");
       selected.push(bubble);
       if (selected.length === 2) {
@@ -144,11 +149,10 @@
             popSound.currentTime = 0;
             popSound.play();
             showHeart(b.offsetLeft, b.offsetTop);
-            canvas.removeChild(b);
+            if (b.parentNode) canvas.removeChild(b);
           });
           score += 5;
           updateScore();
-          checkMilestones();
         } else {
           selected.forEach(b => b.classList.remove("selected"));
         }
@@ -163,58 +167,37 @@
       heart.style.left = x + "px";
       heart.style.top = y + "px";
       canvas.appendChild(heart);
-      setTimeout(() => canvas.removeChild(heart), 2000);
-    }
-
-    function showMessage(text) {
-      const msg = document.createElement("div");
-      msg.innerText = text;
-      msg.style.position = "absolute";
-      msg.style.top = "50%";
-      msg.style.left = "50%";
-      msg.style.transform = "translate(-50%, -50%)";
-      msg.style.fontSize = "48px";
-      msg.style.color = "#d63384";
-      msg.style.fontWeight = "bold";
-      msg.style.background = "rgba(255,255,255,0.95)";
-      msg.style.padding = "30px";
-      msg.style.borderRadius = "20px";
-      msg.style.zIndex = "10000";
-      msg.style.textAlign = "center";
-      document.body.appendChild(msg);
-      setTimeout(() => msg.remove(), 3000);
+      setTimeout(() => heart.remove(), 2000);
     }
 
     function updateScore() {
       scoreBoard.innerText = `Score: ${score}`;
-    }
-
-    function checkMilestones() {
-      if (score >= 7 && !milestone7) {
-        milestone7 = true;
-        showMessage("You did the first step baby 💖");
-      }
-      if (score >= 77 && !milestone77) {
-        milestone77 = true;
-        for (let i = 0; i < 30; i++) {
-          setTimeout(() => {
-            showHeart(Math.random() * window.innerWidth, Math.random() * window.innerHeight);
-          }, i * 100);
-        }
-        showMessage("✨ Kocaman bir kalp senin için! ✨");
-      }
-      if (score >= 777 && !milestone777) {
-        milestone777 = true;
-        showMessage("I love you so so much 💘");
-      }
+      if (score >= 100) endGame();
     }
 
     function startGame() {
       document.getElementById("startScreen").style.display = "none";
-      const bgMusic = document.getElementById("bgMusic");
-      bgMusic.volume = 0.2;
-      bgMusic.play();
+      score = 0;
+      gameActive = true;
+      updateScore();
       interval = setInterval(createBubble, 800);
+      bgMusic.volume = 0.2;
+      bgMusic.play().catch(() => {
+        console.log("Müzik otomatik çalmadı, kullanıcıdan izin bekleniyor.");
+      });
+    }
+
+    function endGame() {
+      gameActive = false;
+      clearInterval(interval);
+      document.getElementById("endScreen").style.display = "block";
+    }
+
+    function restartGame() {
+      document.getElementById("endScreen").style.display = "none";
+      Array.from(canvas.children).forEach(child => child.remove());
+      selected = [];
+      startGame();
     }
   </script>
 </body>
