@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Bubble Match Game</title>
   <style>
     * { box-sizing: border-box; }
@@ -84,14 +84,24 @@
     <h2>Hey baby girl I was thinking about how much I missed you and I wanted to make a game for you. A bubbles game. You need to match same symbols w each other to get points. Every balloon you couldn't pop gonna be -1 point for you. If you reach the right point u will earn an award ;)</h2>
     <button onclick="startGame()">Play</button>
   </div>
+
   <div id="scoreBoard">Score: 0</div>
   <div id="gameCanvas"></div>
+
   <audio id="popSound" src="https://www.fesliyanstudios.com/play-mp3/387" preload="auto"></audio>
+  <audio id="bgMusic" src="https://pixabay.com/music/beats-sonic-chill-372576/" loop preload="auto"></audio>
+
   <script>
     const symbols = ['🎀','💗','🌸','🩷','💖','✨'];
     let selected = [];
     let score = 0;
     let interval;
+
+    // Milestone kontrol değişkenleri
+    let milestone7 = false;
+    let milestone77 = false;
+    let milestone777 = false;
+
     const canvas = document.getElementById("gameCanvas");
     const scoreBoard = document.getElementById("scoreBoard");
     const popSound = document.getElementById("popSound");
@@ -104,7 +114,7 @@
       bubble.style.top = "100vh";
       canvas.appendChild(bubble);
       let top = window.innerHeight;
-      const speed = 1 + Math.random() * 2 + score * 0.02;
+      const speed = 1.5 + Math.random();  // Sabit hız, skorla artmaz
 
       const move = setInterval(() => {
         top -= speed;
@@ -115,6 +125,7 @@
             canvas.removeChild(bubble);
             score--;
             updateScore();
+            checkMilestones();
           }
         }
       }, 20);
@@ -135,7 +146,7 @@
             showHeart(b.offsetLeft, b.offsetTop);
             canvas.removeChild(b);
           });
-          score+=5;
+          score += 5;
           updateScore();
           checkMilestones();
         } else {
@@ -155,22 +166,54 @@
       setTimeout(() => canvas.removeChild(heart), 2000);
     }
 
+    function showMessage(text) {
+      const msg = document.createElement("div");
+      msg.innerText = text;
+      msg.style.position = "absolute";
+      msg.style.top = "50%";
+      msg.style.left = "50%";
+      msg.style.transform = "translate(-50%, -50%)";
+      msg.style.fontSize = "48px";
+      msg.style.color = "#d63384";
+      msg.style.fontWeight = "bold";
+      msg.style.background = "rgba(255,255,255,0.95)";
+      msg.style.padding = "30px";
+      msg.style.borderRadius = "20px";
+      msg.style.zIndex = "10000";
+      msg.style.textAlign = "center";
+      document.body.appendChild(msg);
+      setTimeout(() => msg.remove(), 3000);
+    }
+
     function updateScore() {
       scoreBoard.innerText = `Score: ${score}`;
     }
 
     function checkMilestones() {
-      if (score === 7) alert("First step'i tamamladın yes baby");
-      else if (score === 77) {
-        for (let i = 0; i < 30; i++) {
-          setTimeout(() => showHeart(Math.random() * window.innerWidth, Math.random() * window.innerHeight), i * 100);
-        }
+      if (score >= 7 && !milestone7) {
+        milestone7 = true;
+        showMessage("You did the first step baby 💖");
       }
-      else if (score === 777) alert("I love you so so much");
+      if (score >= 77 && !milestone77) {
+        milestone77 = true;
+        for (let i = 0; i < 30; i++) {
+          setTimeout(() => {
+            showHeart(Math.random() * window.innerWidth, Math.random() * window.innerHeight);
+          }, i * 100);
+        }
+        showMessage("✨ Kocaman bir kalp senin için! ✨");
+      }
+      if (score >= 777 && !milestone777) {
+        milestone777 = true;
+        showMessage("I love you so so much 💘");
+      }
     }
 
     function startGame() {
       document.getElementById("startScreen").style.display = "none";
+      const bgMusic = document.getElementById("bgMusic");
+      bgMusic.volume = 0.2;
+      bgMusic.play();
       interval = setInterval(createBubble, 800);
     }
   </script>
