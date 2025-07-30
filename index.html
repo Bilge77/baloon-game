@@ -82,12 +82,16 @@
 </head>
 <body>
   <div id="startScreen">
-    <h2>Hey baby girl 💕 I was thinking about how much I missed you and I wanted to make a game for you. Match the same bubbles to get points. Every unpopped one is -1. If you reach the goal, you’ll win a surprise! 💝</h2>
+    <h2>
+      Hey baby girl. I was thinking about how much I missed you and I wanted to make a game for you.  
+      Match the same bubbles to get points. Every unpopped one is -1.  
+      If you reach the goal, you’ll win a surprise.
+    </h2>
     <button onclick="startGame()">Play</button>
   </div>
 
   <div id="endScreen" style="display:none;">
-    <h2>🎉 You did it baby! 🎉<br>I love you so so much 💘</h2>
+    <h2>That's my girl</h2>
     <button onclick="restartGame()">Play Again</button>
   </div>
 
@@ -103,6 +107,10 @@
     let score = 0;
     let interval;
     let gameActive = false;
+
+    let milestone7 = false;
+    let milestone77 = false;
+    let milestone777 = false;
 
     const canvas = document.getElementById("gameCanvas");
     const scoreBoard = document.getElementById("scoreBoard");
@@ -170,14 +178,54 @@
       setTimeout(() => heart.remove(), 2000);
     }
 
+    function showMessage(text) {
+      const msg = document.createElement("div");
+      msg.innerText = text;
+      msg.style.position = "absolute";
+      msg.style.top = "50%";
+      msg.style.left = "50%";
+      msg.style.transform = "translate(-50%, -50%)";
+      msg.style.fontSize = "32px";
+      msg.style.color = "#d63384";
+      msg.style.fontWeight = "bold";
+      msg.style.background = "rgba(255,255,255,0.95)";
+      msg.style.padding = "30px";
+      msg.style.borderRadius = "20px";
+      msg.style.zIndex = "10000";
+      msg.style.textAlign = "center";
+      document.body.appendChild(msg);
+      setTimeout(() => msg.remove(), 3000);
+    }
+
     function updateScore() {
       scoreBoard.innerText = `Score: ${score}`;
-      if (score >= 100) endGame();
+      checkMilestones();
+    }
+
+    function checkMilestones() {
+      if (score >= 7 && !milestone7) {
+        milestone7 = true;
+        showMessage("You did the first step baby");
+      }
+      if (score >= 77 && !milestone77) {
+        milestone77 = true;
+        showMessage("I am proud of you");
+        for (let i = 0; i < 30; i++) {
+          setTimeout(() => {
+            showHeart(Math.random() * window.innerWidth, Math.random() * window.innerHeight);
+          }, i * 100);
+        }
+      }
+      if (score >= 777 && !milestone777) {
+        milestone777 = true;
+        endGame();
+      }
     }
 
     function startGame() {
       document.getElementById("startScreen").style.display = "none";
       score = 0;
+      milestone7 = milestone77 = milestone777 = false;
       gameActive = true;
       updateScore();
       interval = setInterval(createBubble, 800);
@@ -191,6 +239,12 @@
       gameActive = false;
       clearInterval(interval);
       document.getElementById("endScreen").style.display = "block";
+      document.getElementById("endScreen").querySelector("h2").innerText = "That's my girl";
+      for (let i = 0; i < 60; i++) {
+        setTimeout(() => {
+          showHeart(Math.random() * window.innerWidth, Math.random() * window.innerHeight);
+        }, i * 80);
+      }
     }
 
     function restartGame() {
